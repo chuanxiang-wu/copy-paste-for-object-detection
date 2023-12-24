@@ -7,11 +7,19 @@ from skimage.draw import polygon
 
 
 def crop_image(image, x, y, width, height):
+    """
+    裁剪图片指定区域的图像
+    起点坐标：x,y  宽高：width, height
+    """
     cropped_image = image[y:y + height, x:x + width]
     return cropped_image
 
 
 def convert_to_absolute(label, image_width, image_height):
+    """
+    将yolo格式的标注信息[class_id, x_center, y_center, relative_width, relative_height]
+    转换为[class_id 左 上 右 下]的形式
+    """
     class_id, relative_x_center, relative_y_center, relative_width, relative_height = label
 
     # 计算边界框的绝对坐标
@@ -31,6 +39,10 @@ def convert_to_absolute(label, image_width, image_height):
 
 
 def convert_to_yolo_format(class_id, left, top, right, bottom, image_width, image_height):
+    """
+    将[class_id 左 上 右 下]的标注信息
+    转换为yolo格式[class_id, x_center, y_center, relative_width, relative_height]
+    """
     # 计算目标框的中心点坐标和宽高
     x = (left + right) / 2
     y = (top + bottom) / 2
@@ -49,10 +61,10 @@ def convert_to_yolo_format(class_id, left, top, right, bottom, image_width, imag
 
 def is_coincide(polygon_1, polygon_2):
     '''
-    判断2个四边形是否重合
-    :param polygon_1: [x1, y1, x2, y2]
-    :param polygon_2: [x3, y3, x4, y4]
-    :return:  bool，1表示重合
+    判断2个bondbox是否重合
+    :param polygon_1: [class_id， x1, y1, x2, y2]
+    :param polygon_2: [class_id， x3, y3, x4, y4]
+    :return:  True表示重合
     '''
     # 获取第一个矩形的左上角和右下角坐标
     x1 = min(polygon_1[1], polygon_1[3])
@@ -69,6 +81,9 @@ def is_coincide(polygon_1, polygon_2):
 
 
 def get_src_location_map(txtdir, imagewidth, imageheight):
+    """
+    输入yolo格式的标注txt文件，得到[class_id 左 上 右 下]的信息
+    """
     with open(txtdir) as F:
         for linestr in F:
             info = linestr.strip().split(" ")
@@ -79,9 +94,19 @@ def get_src_location_map(txtdir, imagewidth, imageheight):
 
 
 if __name__ == "__main__":
-    img_dir = r"C:\Users\Wuchuanxiang\Desktop\4\img\*.jpg"  # 图片存放地址
-    cp_img_save = r'C:\Users\Wuchuanxiang\Desktop\4\cp_img'
-    cp_txt_save = r'C:\Users\Wuchuanxiang\Desktop\4\cp_txt'
+    '''
+    指定输入地址：
+    img_dir-----原始图片存放地址,程序指定图片格式为jpg，其他格式需要修改
+    txt_dir-----原始图片yolo格式标注存放地址
+    
+    指定输出地址：
+    cp_img_save-----copy-paste后图片保存地址
+    cp_txt_save-----copy-paste后图片标注保存地址
+    '''
+    img_dir = r''  # 原始图片存放地址, img_dir形式应为"img save dir/*.jpg"
+    txt_dir = r''   # 原始图片标注存放地址
+    cp_img_save = r''  # copy-paste后图片保存地址
+    cp_txt_save = r''  # copy-paste后图片标注保存地址
     os.makedirs(cp_img_save, exist_ok=True)
     os.makedirs(cp_txt_save, exist_ok=True)
 
@@ -105,10 +130,9 @@ if __name__ == "__main__":
             class_id, left, top, right, bottom = row
             cp_location_map.append([class_id, left, top, right, bottom])
 
-
         image_b = cv2.imread(img_path)  # 复制原始图片
         res_list = []
-        rescale_ratio = np.random.uniform(0.7, 1)
+        rescale_ratio = np.random.uniform(0.7, 1)   # 图像缩放比例
         # print(rescale_ratio)
 
         # 打开源文件和目标文件，并以追加模式打开
