@@ -170,7 +170,7 @@ if __name__ == "__main__":
                         res_polygon = [class_id, b_x, b_y, b_x + new_width, b_y + new_height]
 
                         label = False
-                        for or_polygon in src_location_map:
+                        for or_polygon in cp_location_map:
                             if is_coincide(res_polygon, or_polygon):
                                 label = True
                                 break
