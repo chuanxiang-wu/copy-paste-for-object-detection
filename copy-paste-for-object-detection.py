@@ -62,9 +62,9 @@ def convert_to_yolo_format(class_id, left, top, right, bottom, image_width, imag
 def is_coincide(polygon_1, polygon_2):
     '''
     判断2个bondbox是否重合
-    :param polygon_1: [class_id， x1, y1, x2, y2]
-    :param polygon_2: [class_id， x3, y3, x4, y4]
-    :return:  True表示重合
+    param polygon_1: [class_id， x1, y1, x2, y2]
+    param polygon_2: [class_id， x3, y3, x4, y4]
+    return:  True表示重合
     '''
     # 获取第一个矩形的左上角和右下角坐标
     x1 = min(polygon_1[1], polygon_1[3])
