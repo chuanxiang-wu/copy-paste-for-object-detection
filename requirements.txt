@@ -1,0 +1,9 @@
+# copy paste for object detection requirements
+# Usage: pip install -r requirements.txt
+
+# Base ---------------
+numpy
+cv2
+imgviz
+tqdm
+argparse
