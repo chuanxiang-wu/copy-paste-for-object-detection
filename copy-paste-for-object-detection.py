@@ -66,15 +66,11 @@ def is_coincide(polygon_1, polygon_2):
     param polygon_2: [class_id， x3, y3, x4, y4]
     return:  True表示重合
     '''
-    # 获取第一个矩形的左上角和右下角坐标
-    x1 = min(polygon_1[1], polygon_1[3])
-    y1 = max(polygon_1[2], polygon_1[4])
-
-    # 获取第二个矩形的左上角和右下角坐标
-    x2 = min(polygon_2[1], polygon_2[3])
-    y2 = max(polygon_2[2], polygon_2[4])
-
-    if (x1 > x2 and y1 < y2) or (y1 > y2 and x1 < x2):
+    min_x = max(polygon_1[1], polygon_2[1])
+    min_y = max(polygon_1[2], polygon_2[2])
+    max_x = min(polygon_1[3], polygon_2[3])
+    max_y = min(polygon_1[4], polygon_2[4])
+    if (min_x < max_x) and (min_y < max_y):
         return True
     else:
         return False
@@ -141,48 +137,51 @@ if __name__ == "__main__":
             content = source.read()
             # 将内容写入目标文件
             target.write(content)
+        cv2.imwrite(cp_img_dir, image_a)
 
         for row in src_location_map:
             class_id, left, top, right, bottom = row
-            if left or top or right or bottom:
-                try:
-                    # 目标可以出现在空白图片的任何位置,只要没有超过限制即可
-                    x = int(left)  # 指定区域的起始横坐标
-                    y = int(top)  # 指定区域的起始纵坐标
-                    width = int(right - left)  # 指定区域的宽度
-                    height = int(bottom - top)  # 指定区域的高度
-                    cropped_image_a = crop_image(image_a, int(x), int(y), int(width), int(height))
+            sj_shu = random.uniform(0, 2)
+            if sj_shu > 1.2:
+                if left or top or right or bottom:
+                    try:
+                        # 目标可以出现在空白图片的任何位置,只要没有超过限制即可
+                        x = int(left)  # 指定区域的起始横坐标
+                        y = int(top)  # 指定区域的起始纵坐标
+                        width = int(right - left)  # 指定区域的宽度
+                        height = int(bottom - top)  # 指定区域的高度
+                        cropped_image_a = crop_image(image_a, int(x), int(y), int(width), int(height))
 
-                    # 计算新的宽度和高度
-                    new_width = int(width * rescale_ratio)
-                    new_height = int(height * rescale_ratio)
-                    # print(new_width)
-                    # print(new_height)
-                    # 对裁剪下来的图像进行缩放
-                    resized_cropped_image_a = cv2.resize(cropped_image_a, (new_width, new_height))
+                        # 计算新的宽度和高度
+                        new_width = int(width * rescale_ratio)
+                        new_height = int(height * rescale_ratio)
+                        # print(new_width)
+                        # print(new_height)
+                        # 对裁剪下来的图像进行缩放
+                        resized_cropped_image_a = cv2.resize(cropped_image_a, (new_width, new_height))
 
-                    image_b_height, image_b_width, _ = image_b.shape
+                        image_b_height, image_b_width, _ = image_b.shape
 
-                    label = True
-                    while label:
-                        b_x = random.randint(0, int(image_b_width - width - 5))
-                        b_y = random.randint(0, int(image_b_height - height - 5))
-                        res_polygon = [class_id, b_x, b_y, b_x + new_width, b_y + new_height]
+                        label = True
+                        while label:
+                            b_x = random.randint(300, int(image_b_width - new_width - 200))
+                            b_y = random.randint(200, int(image_b_height - new_height - 300))
+                            res_polygon = [class_id, b_x, b_y, b_x + new_width, b_y + new_height]
 
-                        label = False
-                        for or_polygon in cp_location_map:
-                            if is_coincide(res_polygon, or_polygon):
-                                label = True
-                                break
+                            label = False
+                            for or_polygon in cp_location_map:
+                                if is_coincide(res_polygon, or_polygon):
+                                    label = True
+                                    break
 
-                    image_b[b_y:b_y + new_height, b_x:b_x + new_width] = resized_cropped_image_a
-                    res = convert_to_yolo_format(class_id, b_x, b_y, b_x + new_width, b_y + new_height, image_b_width,
-                                                 image_b_height)
-                    cp_location_map.append([class_id, b_x, b_y, b_x + new_width, b_y + new_height])
-                    with open(cp_img_txt_dir, "a") as f:
-                        f.write(res + '\n')
-                    cv2.imwrite(cp_img_dir, image_b)
-                    # break
-                except:
-                    print("error")
-                    break
+                        image_b[b_y:b_y + new_height, b_x:b_x + new_width] = resized_cropped_image_a
+                        res = convert_to_yolo_format(class_id, b_x, b_y, b_x + new_width, b_y + new_height, image_b_width,
+                                                     image_b_height)
+                        cp_location_map.append([class_id, b_x, b_y, b_x + new_width, b_y + new_height])
+                        with open(cp_img_txt_dir, "a") as f:
+                            f.write(res + '\n')
+                        cv2.imwrite(cp_img_dir, image_b)
+                        # break
+                    except:
+                        print("error")
+                        break
